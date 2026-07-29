@@ -65,9 +65,9 @@ jobs:
         run: |
           VERSION="${{ needs.version.outputs.clean }}"
           case "${{ matrix.target }}" in
-            win)   npx electron-builder --win portable   --config.extraMetadata.version="$VERSION" ;;
-            mac)   npx electron-builder --mac dmg        --config.extraMetadata.version="$VERSION" ;;
-            linux) npx electron-builder --linux AppImage --config.extraMetadata.version="$VERSION" ;;
+            win)   npx electron-builder --win portable   --config.extraMetadata.version="$VERSION" -p never ;;
+            mac)   npx electron-builder --mac dmg        --config.extraMetadata.version="$VERSION" -p never ;;
+            linux) npx electron-builder --linux AppImage --config.extraMetadata.version="$VERSION" -p never ;;
           esac
 
       - name: Upload (${{ matrix.target }})
