@@ -1,9 +1,5 @@
-__pycache__/
-*.pyc
-*.pyo
-build/
+node_modules/
 dist/
-*.spec
-*.egg-info/
 .DS_Store
 Thumbs.db
+*.log

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Content-Security-Policy"
+          content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'" />
+    <title>UTM Audio Splitter</title>
+    <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<div id="app">
+    <!-- Header -->
+    <header id="header">
+        <div class="brand">🎵 UTM Audio Splitter</div>
+        <div class="subtitle">Extract, split, and convert audio — no upload required</div>
+    </header>
+
+    <!-- Input Files -->
+    <section class="card" id="input-section">
+        <div class="card-title">Input Files</div>
+        <div id="dropzone" class="dropzone">
+            <div class="dropzone-icon">📁</div>
+            <div class="dropzone-text">Drag &amp; drop audio/video files here</div>
+            <div class="dropzone-sub">or</div>
+            <button id="btn-browse" class="btn btn-secondary">Browse Files</button>
+        </div>
+        <div id="file-list" class="file-list hidden"></div>
+        <div id="file-info" class="file-info">No files selected</div>
+        <button id="btn-clear" class="btn btn-small btn-ghost hidden">Clear</button>
+    </section>
+
+    <!-- Processing Mode -->
+    <section class="card" id="mode-section">
+        <div class="card-title">Processing Mode</div>
+        <div class="mode-options">
+            <label class="mode-option" data-mode="extract">
+                <input type="radio" name="mode" value="extract" checked />
+                <span class="mode-icon">🎧</span>
+                <span class="mode-label">Extract Audio</span>
+                <span class="mode-desc">Extract audio track from video files</span>
+            </label>
+            <label class="mode-option" data-mode="split_duration">
+                <input type="radio" name="mode" value="split_duration" />
+                <span class="mode-icon">⏱</span>
+                <span class="mode-label">Split by Duration</span>
+                <span class="mode-desc">Split audio into equal time segments</span>
+            </label>
+            <label class="mode-option" data-mode="split_size">
+                <input type="radio" name="mode" value="split_size" />
+                <span class="mode-icon">📦</span>
+                <span class="mode-label">Split by Size</span>
+                <span class="mode-desc">Split to fit a max file size (e.g. 25MB)</span>
+            </label>
+        </div>
+
+        <!-- Config Panel -->
+        <div id="config-panel" class="config-panel">
+            <div class="config-row" id="config-format">
+                <label for="output-format">Output format:</label>
+                <select id="output-format">
+                    <option value="mp3">MP3 (.mp3)</option>
+                    <option value="wav">WAV (.wav)</option>
+                    <option value="m4a">M4A (.m4a)</option>
+                </select>
+            </div>
+            <div class="config-row hidden" id="config-duration">
+                <label for="segment-seconds">Segment duration (seconds):</label>
+                <input type="number" id="segment-seconds" value="300" min="1" />
+            </div>
+            <div class="config-row hidden" id="config-size">
+                <label for="max-size-mb">Max file size (MB):</label>
+                <input type="number" id="max-size-mb" value="25" min="1" />
+            </div>
+        </div>
+    </section>
+
+    <!-- Output Directory -->
+    <section class="card" id="output-section">
+        <div class="card-title">Output Directory</div>
+        <div class="output-row">
+            <input type="text" id="output-dir" readonly />
+            <button id="btn-output" class="btn btn-secondary">📂 Browse</button>
+        </div>
+    </section>
+
+    <!-- Action Bar -->
+    <section class="card" id="action-section">
+        <div class="action-row">
+            <button id="btn-start" class="btn btn-primary">▶ Start Processing</button>
+            <button id="btn-cancel" class="btn btn-danger" disabled>✕ Cancel</button>
+            <div class="progress-area">
+                <div id="progress-track" class="progress-track">
+                    <div id="progress-bar" class="progress-bar" style="width: 0%"></div>
+                </div>
+                <span id="progress-label" class="progress-label">Ready</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Log -->
+    <section class="card" id="log-section">
+        <div class="card-title">Output Log</div>
+        <pre id="log-box" class="log-box"></pre>
+    </section>
+</div>
+
+<script src="renderer.js"></script>
+</body>
+</html>

@@ -1,87 +1,83 @@
 # UTM Audio Splitter
 
-🎵 **Extract audio from video, split audio by duration or file size** — all offline, no upload required.
+🎵 **Extract audio from video, split by duration or file size** — all offline, no upload required.
 
-Choose your tool:
+Choose your weapon:
 
-- **🖥️ Desktop App** (Windows / macOS / Linux) — drag-and-drop GUI with real-time progress
-- **📜 CLI Scripts** — light-weight shell scripts for quick splitting
+- **🖥️ Desktop App** — drag-and-drop GUI (Windows / macOS / Linux) — **download & run, no setup needed**
+- **📜 CLI Scripts** — light-weight shell scripts for quick terminal splitting
 
 ---
 
-## 🖥️ Desktop GUI App (Cross-Platform)
+## 🖥️ Desktop App (Electron)
 
-A modern desktop application with drag-and-drop support, real-time progress bars, and three processing modes.
+A cross-platform desktop application with zero dependencies. Download, install, run.
+
+### Download
+
+| Platform | Format | How to Run |
+|----------|--------|------------|
+| Windows | `.exe` (portable) | Double-click `UTM Audio Splitter.exe` |
+| macOS | `.dmg` | Open DMG, drag to Applications, launch |
+| Linux | `.AppImage` | `chmod +x && ./UTM\ Audio\ Splitter-*.AppImage` |
+
+> **Build from source** if no prebuilt release is available (see [Building](#building) below).
 
 ### Features
 
-| Feature | Description |
-|---------|-------------|
-| **Drag & Drop** | Drop audio/video files directly onto the app |
+| Feature | |
+|---------|--|
+| **Drag & Drop** | Drop files onto the app or click Browse |
 | **Video → Audio** | Extract audio from `.mp4`, `.mkv`, `.mov`, `.avi`, `.webm` |
-| **Split by Duration** | Cut audio into equal-length segments (e.g. 5 min each) |
-| **Split by Size** | Split audio to stay under a file size limit (e.g. 25 MB for OpenAI Whisper) |
+| **Split by Duration** | Cut audio into equal time segments (configurable seconds) |
+| **Split by File Size** | Auto-calculates segment time from bitrate to stay under a size limit |
 | **Format Selection** | Output as MP3, WAV, or M4A |
-| **Progress Tracking** | Real-time progress bar and detailed log |
-| **Cross-Platform** | Runs on Windows, macOS, and Linux |
-
-### Quick Start (Desktop App)
-
-```bash
-# 1. Install Python 3.10+ and ffmpeg
-# 2. Install the app
-pip install -r requirements.txt
-
-# 3. Launch
-python app.py
-```
-
-> **Tip:** Use `build.py` to package a standalone executable with PyInstaller:
-> ```bash
-> python build.py
-> ```
-> The bundled `.exe` / `.app` / binary lands in `dist/` — no Python required to run it.
+| **Progress Bar** | Real-time progress tracking per file |
+| **Output Log** | Full ffmpeg command log for transparency |
+| **Cancel** | Stop mid-operation |
+| **No Dependencies** | Everything bundled — not even Python or Node needed |
 
 ### Screenshot
 
 ```
-┌─────────────────────────────────────────────┐
-│  🎵 UTM Audio Splitter                      │
-│  Extract, split, and convert audio offline   │
-├─────────────────────────────────────────────┤
-│ 📁 Input Files                              │
-│ ┌─────────────────────────────────────┐ 📁  │
-│ │ Drag & drop files here             │    │
-│ └─────────────────────────────────────┘    │
-│ 3 file(s): .mp3, .mp4, .wav  [Clear]     │
-├─────────────────────────────────────────────┤
-│ Processing Mode                             │
-│ ○ 🎧 Extract Audio                         │
-│ ○ ⏱ Split by Duration                     │
-│ ● 📦 Split by Size     Max: [ 25 ] MB    │
-├─────────────────────────────────────────────┤
-│ Output Directory: /Users/me/Desktop/Output  │
-├─────────────────────────────────────────────┤
-│ [▶ Start Processing]  [✕ Cancel]           │
-│ ████████████████░░░░░░ 75%                 │
-├─────────────────────────────────────────────┤
-│ Output Log                                  │
-│ $ ffmpeg -i lecture.mp4 -vn ...            │
-│ ✓ Audio extracted.                          │
-│ → Bitrate: 128000 bps → segment ~300s      │
-└─────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────┐
+│  🎵 UTM Audio Splitter                              │
+│  Extract, split, and convert audio — no upload      │
+├─────────────────────────────────────────────────────┤
+│  📁 Input Files                                     │
+│  ┌─────────────────────────────────────────────┐    │
+│  │  📁 Drag & drop audio/video files here       │    │
+│  │              or                              │    │
+│  │        [ Browse Files ]                      │    │
+│  └─────────────────────────────────────────────┘    │
+│  lecture.mp4  song.mp3  podcast.wav                │
+│  3 file(s): .mp4, .mp3, .wav                       │
+├─────────────────────────────────────────────────────┤
+│  Processing Mode                                    │
+│  (●) 🎧 Extract Audio                              │
+│  ( ) ⏱ Split by Duration                          │
+│  ( ) 📦 Split by Size                             │
+│                                                     │
+│  Output format: [MP3 (.mp3) ▼]                     │
+├─────────────────────────────────────────────────────┤
+│  📂 Output Directory                                │
+│  /Users/me/Desktop/SplitAudio    [ Browse ]        │
+├─────────────────────────────────────────────────────┤
+│  [▶ Start Processing]  [✕ Cancel]                  │
+│  ████████████████████░░░░░░░░  75%                 │
+├─────────────────────────────────────────────────────┤
+│  Output Log                                         │
+│  ▶ Processing started...                            │
+│  ffmpeg -i lecture.mp4 -vn -acodec ...             │
+│  ✓ Audio extracted.                                 │
+└─────────────────────────────────────────────────────┘
 ```
-
-### Supported Input Formats
-
-**Audio:** `.mp3`, `.m4a`, `.aac`, `.wav`, `.flac`, `.ogg`
-**Video:** `.mp4`, `.mkv`, `.mov`, `.avi`, `.webm`
 
 ---
 
 ## 📜 CLI Scripts (Light-weight)
 
-For users who prefer the terminal or need a zero-dependency splitter.
+For headless servers or users who prefer the terminal.
 
 | Platform | Script | How to Run |
 |----------|--------|------------|
@@ -89,23 +85,42 @@ For users who prefer the terminal or need a zero-dependency splitter.
 | macOS | [`audio-splitter-macos.command`](audio-splitter-macos.command) | `chmod +x && ./` |
 | Linux | [`audio-splitter-linux.sh`](audio-splitter-linux.sh) | `chmod +x && ./` |
 
-Each script:
-1. Auto-installs `ffmpeg` if missing
-2. Scans the current folder for supported files **larger than 100 MB**
-3. Splits each into **~50 MB** parts
-4. For `.mp4` files, extracts audio → splits to MP3
+Each script auto-installs `ffmpeg` if missing, then splits files >100MB into ~50MB parts.
 
 ---
 
+## Building from Source
+
+If you want to build the desktop app yourself (e.g. to customize or for a release):
+
+```bash
+# Prerequisites: Node.js 18+
+git clone https://github.com/sharulhafiz/utm-audio-splitter.git
+cd utm-audio-splitter
+
+# Install dependencies
+npm install
+
+# Run in development mode
+npm start
+
+# Build portable binaries
+npm run build:win      # Windows portable .exe
+npm run build:mac      # macOS .dmg
+npm run build:linux    # Linux .AppImage
+npm run build:all      # All platforms
+```
+
+Output lands in `dist/`.
+
 ## Requirements
 
-- **ffmpeg** / **ffprobe** — the GUI app warns if missing; CLI scripts attempt auto-installation
-- **Python 3.10+** (only for the GUI app)
-- **customtkinter** (auto-installed via `pip install -r requirements.txt`)
+- **Desktop App**: None — everything is bundled (Electron runtime + ffmpeg binaries)
+- **CLI Scripts**: `ffmpeg` / `ffprobe` must be installed (scripts attempt auto-installation)
 
 ## Output
 
-Parts are named `{original}_part_001.{ext}`, `{original}_part_002.{ext}`, etc. and placed in your chosen output directory.
+Parts are named `{original}_part_001.{ext}`, `{original}_part_002.{ext}`, etc. in your chosen output directory.
 
 Existing split parts are overwritten on re-run.
 

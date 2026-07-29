@@ -1,0 +1,58 @@
+{
+  "name": "utm-audio-splitter",
+  "version": "2026.07.29",
+  "description": "Extract audio from video, split by duration or file size — all offline, no upload required.",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "build:win": "electron-builder --win portable",
+    "build:mac": "electron-builder --mac dmg",
+    "build:linux": "electron-builder --linux AppImage",
+    "build:all": "electron-builder --win portable --mac dmg --linux AppImage"
+  },
+  "build": {
+    "appId": "my.utm.audio-splitter",
+    "productName": "UTM Audio Splitter",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "node_modules/ffmpeg-static",
+        "to": "ffmpeg-static",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "node_modules/ffprobe-static",
+        "to": "ffprobe-static",
+        "filter": ["**/*"]
+      }
+    ],
+    "win": {
+      "target": "portable",
+      "icon": "assets/icon.png"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "assets/icon.png",
+      "category": "public.app-category.utilities"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "assets/icon.png",
+      "category": "Audio"
+    }
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0"
+  },
+  "dependencies": {
+    "ffmpeg-static": "^5.2.0",
+    "ffprobe-static": "^3.1.0"
+  }
+}
