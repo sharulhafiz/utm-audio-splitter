@@ -1,0 +1,115 @@
+name: Build & Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag (e.g. v2026.07.29)"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: "Build ${{ matrix.os }}"
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            target: win
+            artifact_name: UTM-Audio-Splitter-Windows.exe
+            build_cmd: npx electron-builder --win portable --config.extraMetadata.version=${{ github.ref_name }}
+          - os: macos-latest
+            target: mac
+            artifact_name: UTM-Audio-Splitter-macOS.dmg
+            build_cmd: npx electron-builder --mac dmg --config.extraMetadata.version=${{ github.ref_name }}
+          - os: ubuntu-latest
+            target: linux
+            artifact_name: UTM-Audio-Splitter-Linux.AppImage
+            build_cmd: npx electron-builder --linux AppImage --config.extraMetadata.version=${{ github.ref_name }}
+
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build (${{ matrix.target }})
+        run: ${{ matrix.build_cmd }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: dist/*.exe
+          if-no-files-found: ignore
+
+      - name: Upload DMG (macOS)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: dist/*.dmg
+          if-no-files-found: ignore
+
+      - name: Upload AppImage (Linux)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: dist/*.AppImage
+          if-no-files-found: ignore
+
+  release:
+    name: Create Release
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: List artifacts
+        run: find artifacts -type f -ls
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: "UTM Audio Splitter ${{ github.ref_name }}"
+          body: |
+            ## UTM Audio Splitter ${{ github.ref_name }}
+
+            ### 📦 Downloads
+
+            | Platform | File |
+            |----------|------|
+            | 🪟 Windows | `UTM-Audio-Splitter-Windows.exe` (portable) |
+            | 🍎 macOS   | `UTM-Audio-Splitter-macOS.dmg` |
+            | 🐧 Linux   | `UTM-Audio-Splitter-Linux.AppImage` |
+
+            ### 🚀 How to use
+            - **Windows**: Download `.exe` and double-click
+            - **macOS**: Download `.dmg`, open, drag to Applications
+            - **Linux**: Download `.AppImage`, `chmod +x` and run
+
+            No installation or dependencies required.
+          files: |
+            artifacts/*/*
+          draft: false
+          prerelease: false
