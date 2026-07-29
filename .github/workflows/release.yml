@@ -14,23 +14,36 @@ permissions:
   contents: write
 
 jobs:
+  version:
+    name: Prepare version
+    runs-on: ubuntu-latest
+    outputs:
+      clean: ${{ steps.ver.outputs.clean }}
+    steps:
+      - name: Sanitize version
+        id: ver
+        run: |
+          RAW="${{ github.ref_name }}"
+          CLEAN="${RAW#v}"
+          VERSION="${CLEAN%%-*}"
+          echo "clean=$VERSION" >> $GITHUB_OUTPUT
+
   build:
-    name: "Build ${{ matrix.os }}"
+    name: "Build ${{ matrix.target }}"
+    needs: version
     strategy:
+      fail-fast: false
       matrix:
         include:
           - os: windows-latest
             target: win
-            artifact_name: UTM-Audio-Splitter-Windows.exe
-            build_cmd: npx electron-builder --win portable --config.extraMetadata.version=${{ steps.version.outputs.clean }}
+            ext: ".exe"
           - os: macos-latest
             target: mac
-            artifact_name: UTM-Audio-Splitter-macOS.dmg
-            build_cmd: npx electron-builder --mac dmg --config.extraMetadata.version=${{ steps.version.outputs.clean }}
+            ext: ".dmg"
           - os: ubuntu-latest
             target: linux
-            artifact_name: UTM-Audio-Splitter-Linux.AppImage
-            build_cmd: npx electron-builder --linux AppImage --config.extraMetadata.version=${{ steps.version.outputs.clean }}
+            ext: ".AppImage"
 
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
@@ -45,46 +58,23 @@ jobs:
           node-version: 20
           cache: "npm"
 
-      - name: Prepare version
-        id: version
-        run: |
-          # Strip 'v' prefix and any pre-release suffix for Windows compatibility
-          RAW="${{ github.ref_name }}"
-          CLEAN="${RAW#v}"
-          # Remove -prerelease suffix for version number
-          VERSION="${CLEAN%%-*}"
-          echo "raw=$RAW" >> $GITHUB_OUTPUT
-          echo "clean=$VERSION" >> $GITHUB_OUTPUT
-        shell: bash
-
       - name: Install dependencies
         run: npm ci
 
       - name: Build (${{ matrix.target }})
-        run: ${{ matrix.build_cmd }}
+        run: |
+          VERSION="${{ needs.version.outputs.clean }}"
+          case "${{ matrix.target }}" in
+            win)   npx electron-builder --win portable   --config.extraMetadata.version="$VERSION" ;;
+            mac)   npx electron-builder --mac dmg        --config.extraMetadata.version="$VERSION" ;;
+            linux) npx electron-builder --linux AppImage --config.extraMetadata.version="$VERSION" ;;
+          esac
 
-      - name: Upload portable EXE (Windows)
-        if: matrix.target == 'win'
+      - name: Upload (${{ matrix.target }})
         uses: actions/upload-artifact@v4
         with:
-          name: UTM-Audio-Splitter-Windows
-          path: dist/*.exe
-          if-no-files-found: error
-
-      - name: Upload DMG (macOS)
-        if: matrix.target == 'mac'
-        uses: actions/upload-artifact@v4
-        with:
-          name: UTM-Audio-Splitter-macOS
-          path: dist/*.dmg
-          if-no-files-found: error
-
-      - name: Upload AppImage (Linux)
-        if: matrix.target == 'linux'
-        uses: actions/upload-artifact@v4
-        with:
-          name: UTM-Audio-Splitter-Linux
-          path: dist/*.AppImage
+          name: UTM-Audio-Splitter-${{ matrix.target }}
+          path: dist/*${{ matrix.ext }}
           if-no-files-found: error
 
   release:
