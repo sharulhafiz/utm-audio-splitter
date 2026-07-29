@@ -36,17 +36,41 @@ function resolveBin(pkgBase, binName) {
 }
 
 function initFFmpeg() {
-    try {
-        const ffstatic = require("ffmpeg-static");
-        ffmpegPath = typeof ffstatic === "string" ? ffstatic : ffstatic.path;
-    } catch {
-        ffmpegPath = resolveBin("ffmpeg-static", process.platform === "win32" ? "ffmpeg.exe" : "ffmpeg");
+    // In production (packaged app), binaries live in extraResources outside asar
+    // Try them first since asar paths can't be executed.
+    const isPackaged = app.isPackaged;
+    const binName = process.platform === "win32" ? "ffmpeg.exe" : "ffmpeg";
+    const probeName = process.platform === "win32" ? "ffprobe.exe" : "ffprobe";
+
+    if (isPackaged && process.resourcesPath) {
+        const ffCandidate = path.join(process.resourcesPath, "ffmpeg-static", binName);
+        const fpCandidate = path.join(process.resourcesPath, "ffprobe-static", probeName);
+        if (fs.existsSync(ffCandidate)) ffmpegPath = ffCandidate;
+        if (fs.existsSync(fpCandidate)) ffprobePath = fpCandidate;
     }
-    try {
-        const fpstatic = require("ffprobe-static");
-        ffprobePath = typeof fpstatic === "string" ? fpstatic : fpstatic.path;
-    } catch {
-        ffprobePath = resolveBin("ffprobe-static", process.platform === "win32" ? "ffprobe.exe" : "ffprobe");
+
+    // Fallback: require() for development or as fallback
+    if (!ffmpegPath) {
+        try {
+            const ffstatic = require("ffmpeg-static");
+            const raw = typeof ffstatic === "string" ? ffstatic : ffstatic.path;
+            // Only use if it's not inside an asar archive
+            if (raw && !raw.includes(".asar")) ffmpegPath = raw;
+        } catch { /* ignore */ }
+    }
+    if (!ffmpegPath) {
+        ffmpegPath = resolveBin("ffmpeg-static", binName);
+    }
+
+    if (!ffprobePath) {
+        try {
+            const fpstatic = require("ffprobe-static");
+            const raw = typeof fpstatic === "string" ? fpstatic : fpstatic.path;
+            if (raw && !raw.includes(".asar")) ffprobePath = raw;
+        } catch { /* ignore */ }
+    }
+    if (!ffprobePath) {
+        ffprobePath = resolveBin("ffprobe-static", probeName);
     }
 }
 
