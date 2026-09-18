@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-SCRIPT_VERSION="2026.03.04"
+SCRIPT_VERSION="2026.09.18"
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$SCRIPT_DIR"
@@ -129,7 +129,7 @@ for file in *; do
     base="${file%.*}"
 
     if [[ "$ext_lower" == "mp4" ]]; then
-        segment_seconds=$(( (TARGET_CHUNK_BYTES * 8) / MP4_OUTPUT_BITRATE_BPS ))
+        segment_seconds=$(( (TARGET_CHUNK_BYTES * 8 * 98 / 100) / MP4_OUTPUT_BITRATE_BPS ))
         if (( segment_seconds < 1 )); then
             segment_seconds=1
         fi
@@ -146,7 +146,7 @@ for file in *; do
             bitrate_bps=128000
         fi
 
-        segment_seconds=$(( (TARGET_CHUNK_BYTES * 8) / bitrate_bps ))
+        segment_seconds=$(( (TARGET_CHUNK_BYTES * 8 * 98 / 100) / bitrate_bps ))
         if (( segment_seconds < 1 )); then
             segment_seconds=1
         fi
